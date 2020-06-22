@@ -1,13 +1,11 @@
 export default class SwapiService {
-
-  _apiBase = 'https://swapi.dev/api';
+  _apiBase = "https://swapi.dev/api";
 
   async getResource(url) {
     const res = await fetch(`${this._apiBase}${url}`);
 
     if (!res.ok) {
-      throw new Error(`Could not fetch ${url}` +
-        `, received ${res.status}`)
+      throw new Error(`Could not fetch ${url}` + `, received ${res.status}`);
     }
     return await res.json();
   }
@@ -23,11 +21,12 @@ export default class SwapiService {
 
   async getAllPlanets() {
     const res = await this.getResource(`/planets/`);
-    return res.results;
+    return this._transformPlanet(res);
   }
 
-  getPlanet(id) {
-    return this.getResource(`/planets/${id}/`);
+  async getPlanet(id) {
+    const planet = await this.getResource(`/planets/${id}/`);
+    return this._transformPlanet(planet);
   }
 
   async getAllStarships() {
@@ -37,5 +36,19 @@ export default class SwapiService {
 
   getStarship(id) {
     return this.getResource(`/starships/${id}/`);
+  }
+  _extractId(item){
+    const idRegExp = /\/([0-9]*)\/$/;
+    const id = item.url.match(idRegExp)[1];
+  }
+
+  _transformPlanet(planet) {
+    return {
+      id:this._extractId(planet),
+      name: planet.name,
+      population: planet.population,
+      rotationPeriod: planet.rotation_period,
+      diameter: planet.diameter,
+    };
   }
 }
